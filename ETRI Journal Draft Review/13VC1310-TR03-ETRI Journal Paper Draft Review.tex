@@ -1,0 +1,199 @@
+%%% Hi Everybody.  This is the LaTeX file for the technical report
+%%% "How to Make a Technical Report (Rev. 3)" by Sean Luke.
+%%%
+%%% You might instead be looking for the LaTeX template. 
+%%% That file is found in   template.tex
+
+\documentclass[twocolumn]{article}
+\usepackage{mathpazo}
+\usepackage{microtype}
+\usepackage{times}
+   \newcommand{\bi}{\begin{itemize}}
+    \newcommand{\ei}{\end{itemize}}
+    \newcommand{\be}{\begin{enumerate}}
+    \newcommand{\ee}{\end{enumerate}}
+    \newcommand{\ii}{\item}
+    \newtheorem{Def}{Definition}
+    \newtheorem{Lem}{Lemma}
+
+    \usepackage{algorithm}
+    \usepackage{algorithmicx}
+    \usepackage{algpseudocode}
+
+    \usepackage{graphicx}
+    \graphicspath{%
+        {converted_graphics/}% inserted by PCTeX
+        {./images/}% inserted by PCTeX
+    }
+
+
+\setlength\textwidth{7in} 
+\setlength\textheight{9.5in} 
+\setlength\oddsidemargin{-0.25in} 
+\setlength\topmargin{-0.25in} 
+\setlength\headheight{0in} 
+\setlength\headsep{0in} 
+\setlength\columnsep{18pt}
+\sloppy 
+ 
+\begin{document}
+
+\title{
+\vspace{-0.5in}\rule{\textwidth}{2pt}
+\begin{tabular}{ll}\begin{minipage}{4.75in}\vspace{6px}
+\noindent\large Autonomous Control Middleware Research Section\\
+\vspace{-12px}\\
+\noindent\LARGE ETRI\qquad \large Technical Report 13VC1310-TR-03
+\end{minipage}&\begin{minipage}{2in}\vspace{6px}\small
+218 Gajeong-ro, Yuseong-gu\\
+Daejeon, 305-700, South Korea\\
+http:/$\!$/www.etri.re.kr/\quad 
+\end{minipage}\end{tabular}
+\rule{\textwidth}{2pt}\vspace{0.25in}
+\LARGE \bf
+Paper Draft Review: Cloud Gaming Service Platform Supporting the Multiple Devices based on the Real-time Streaming
+}
+
+%\date{Autonomous Control Middleware Research Section, ETRI}
+
+\author{
+{\bf Sung-Soo Kim}\\
+sungsoo@etri.re.kr
+}
+
+\maketitle
+
+\begin{abstract}
+The technical memo describes the comments on the paper draft for submitting to the ETRI Journal.
+
+\end{abstract}
+
+\section{Original Draft}
+\subsection{System Architecture: System Overview}
+Our game servers have various types how many clients connected to the server depending on the client device resolutions as shown in Table 1. 
+So, we defined the game server types as a number of connected users.
+If $G$ denotes a game server, $G_t$ is a number of game server defined as $G_t = \{S_1, S_2, \dots S_n\}$, $G_u$ is a number of maximum connected users defined as $G_u = \{U_1, U_2, \dots U_8\}$ and $G_c$ is a number of current connected clients to the game server defined as $G_c = \{C_1, C_2, \dots C_8\}$, then $G$ is defined as:
+\begin{equation}
+G = \{ G_t, G_u, G_c \}  
+\end{equation}
+
+In our game servers, several games are running on the game server at the same time, game sounds are mixing through the one sound card. 
+So, we create the virtual sound device for capturing separately. According to game server types in step (1), we allocate the unique number using pre-defined index number into the virtual sound driver as ordering 1 to 8 left to right corresponding to the number of maximum connected user $G_u$. So, virtual sound driver $S_d$ is defined as:
+\begin{equation}
+S_d = \{ D_1, D_2, \dots D_8\} 
+\end{equation}
+
+After creating the virtual sound device, we must set to the basic sound output device in windows system for most game sound played through this virtual sound device. 
+
+The rest of the paper, we describe focusing on the EQS with capture, audio/video encoding and streaming.
+
+
+\subsection{System Architecture: EQS}
+After the game server types in (1) and virtual sound driver in (2) are defined, EQS is ready to accept the client request for capture and encoding and streaming to the clients. As shown in  Figure 2, new client requests join to the game server, DSP assigns the suitable game server according to the resolution, memory state, numbers of connected users and network state. 
+
+In other to sound capture, we need to assign a shared memory Queue corresponding to the $G_d$. So, shared memory queue $G_q$ is defined as:
+\begin{equation}
+S_q = \{ Q_1, Q_2, … Q_8\}  
+\end{equation}
+    \begin{algorithm}
+    \caption{Audio/Video Capture/Encoded and Streaming}
+    \label{algo:encoding}
+    \begin{algorithmic}[1]
+    \Procedure{EQS}{$G_{i}$}
+       \State AudioCapture  $SC_i$;
+       \State VideoCapture  $VC_i$;
+       \State PacketizationFrame  $p$;
+       \State EncodedAudio $A_i$;
+       \State EncodedVideo $V_i$;
+       \State YUVImage  $Y_i$;	
+       \While{$V_i \not=$ NULL}
+          \State $SC_i \gets$ convertRGB2YUV($G_i$, $Q_i$);
+          \State $VC_i \gets$ captureScreenRect($G_i$,  $V_i$);
+	\State $Y_i \gets$ convertRGB2YUV($G_i$,  $V_i$);
+	\State $V_i \gets$ encodeVideo($VC_i$);
+	\State $A_i \gets$ encodeAudio ($SC_i$);
+	\State $p \gets$ PacketizationAudioVideo($A_i$, $V_i$);
+	\State $G_c \gets$ transmitAVstream($p$);
+       \EndWhile
+    \EndProcedure
+    \end{algorithmic}
+    \end{algorithm}
+
+\section{Comments}
+The below paragraph should be modified in detail because it is too much abstract.
+Moreover, to achieve \emph{coherence}, then, you should show how all of the \emph{ideas} contained in a paragraph are relevant to the \emph{main topic}.
+\subsection{Original Paragraph}
+Figure 3 shows a RTP Packetizer and Sender. Flows are as follows:
+\bi
+\ii Create the UDP socket for the RTP sending using the client IP and Port no.
+\ii Create the RTP Parser
+\ii RTP pack for x264 video frame using the parameter such as rtp handler, timestamp, number of NAL and length
+\ii RTP pack for AAC audio using the parameter such as rtp handler, timestamp, data length
+\ii Deliver to the client using libcup udp sender write() callback function
+\ei
+
+\subsection{System Architecture: System Overview}
+\subsubsection{Review Questions and Comments}
+\noindent
+{\bf Question \#1:} \emph{Why should you define a game server?}
+
+If $G$ denotes a game server, $G_t$ is a number of game server defined as $G_t = \{S_1, S_2, \dots S_n\}$, $G_u$ is a number of maximum connected users defined as $G_u = \{U_1, U_2, \dots U_8\}$ and $G_c$ is a number of current connected clients to the game server defined as $G_c = \{C_1, C_2, \dots C_8\}$, then $G$ is defined as:
+\begin{equation}
+G = \{ G_t, G_u, G_c \}  
+\end{equation}
+\subsubsection{Modified Version}
+Our system supports five service modes for real-time streaming according to the resolutions of the client devices with certain maximum users as shown in Table 1.
+Here, we define the service mode, $\mathcal{SM}$, which  is determined by the resolutions of client devices, $r$, and the maximum connected users, $n$.
+Thus, $\mathcal{SM}$ can be defined as the function, $\mathbf{f}  $,  which have $r$ and $n$ as the parameters for real-time game streaming services.
+$$ \mathcal{SM} = \mathbf{f}(r, n) $$
+
+\subsubsection{Modified Version}
+The sounds of the games is important role in providing the immersive gaming services along with visual elements.
+In order to support multi-users for each different games on single server at the same time, our system should support game streaming for each game respectively.
+However, conventional audio processing based on the dedicated hardware is difficult to directly exploit in multiple game streaming.
+The main problem of dedicated audio processing hardware in our configuration is blending of multiple sounds for the different games.
+Thus, we exploit the \emph{virtualization} technique based on the virtual audio device for isolating the multiple sounds respectively. 
+
+First, we allocate the unique pre-defined index into the virtual audio device from 1 to 8  corresponding to the number of maximum connected users, $n$.
+After that, our system configures the basic sound output device in windows system for multiple game sounds played through the virtual audio devices. 
+Finally, the system captures the sounds for several games respectively in order to encode the game streams as H.264 format.
+
+The rest of the paper, we describe the major functions in the EQS such as capturing audio/video streams of the multiple games, encoding and streaming for the captured game streams.
+
+\subsection{System Architecture: EQS}
+\subsubsection{Review Questions and Comments}
+\noindent
+{\bf Question \#2:} \emph{What do you want to present? The below paragraph will review after the discussion is completed.}
+
+
+
+After the game server types in (1) and virtual sound driver in (2) are defined, EQS is ready to accept the client request for capture and encoding and streaming to the clients. As shown in  Figure 2, new client requests join to the game server, DSP assigns the suitable game server according to the resolution, memory state, numbers of connected users and network state. 
+
+In other to sound capture, we need to assign a shared memory Queue corresponding to the $G_d$. So, shared memory queue $G_q$ is defined as:
+\begin{equation}
+S_q = \{ Q_1, Q_2, … Q_8\}  
+\end{equation}
+    \begin{algorithm}
+    \caption{Audio/Video Capture/Encoded and Streaming}
+    \label{algo:encoding}
+    \begin{algorithmic}[1]
+    \Procedure{EQS}{$G_{i}$}
+       \State AudioCapture  $SC_i$;
+       \State VideoCapture  $VC_i$;
+       \State PacketizationFrame  $p$;
+       \State EncodedAudio $A_i$;
+       \State EncodedVideo $V_i$;
+       \State YUVImage  $Y_i$;	
+       \While{$V_i \not=$ NULL}
+          \State $SC_i \gets$ convertRGB2YUV($G_i$, $Q_i$);
+          \State $VC_i \gets$ captureScreenRect($G_i$,  $V_i$);
+	\State $Y_i \gets$ convertRGB2YUV($G_i$,  $V_i$);
+	\State $V_i \gets$ encodeVideo($VC_i$);
+	\State $A_i \gets$ encodeAudio ($SC_i$);
+	\State $p \gets$ PacketizationAudioVideo($A_i$, $V_i$);
+	\State $G_c \gets$ transmitAVstream($p$);
+       \EndWhile
+    \EndProcedure
+    \end{algorithmic}
+    \end{algorithm}
+\end{document}

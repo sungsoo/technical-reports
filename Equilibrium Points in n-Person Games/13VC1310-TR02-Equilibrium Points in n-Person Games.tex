@@ -1,0 +1,147 @@
+
+\documentclass[twocolumn]{article}
+\usepackage{mathpazo}
+\usepackage{microtype}
+\usepackage{times}
+
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %                              My Commands
+\newcommand{\bi}{\begin{itemize}}
+\newcommand{\ei}{\end{itemize}}
+\newcommand{\be}{\begin{enumerate}}
+\newcommand{\ee}{\end{enumerate}}
+\newcommand{\ii}{\item}
+\newtheorem{Def}{Definition}
+\newtheorem{Lem}{Lemma}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+
+\usepackage{graphicx}
+\graphicspath{%
+        {./images/}
+}
+    
+\setlength\textwidth{7in} 
+\setlength\textheight{9.5in} 
+\setlength\oddsidemargin{-0.25in} 
+\setlength\topmargin{-0.25in} 
+\setlength\headheight{0in} 
+\setlength\headsep{0in} 
+\setlength\columnsep{18pt}
+\sloppy 
+ 
+\begin{document}
+
+\title{
+\vspace{-0.5in}\rule{\textwidth}{2pt}
+\begin{tabular}{ll}\begin{minipage}{4.75in}\vspace{6px}
+\noindent\large Autonomous Control Middleware Research Section\\
+\vspace{-12px}\\
+\noindent\LARGE ETRI\qquad \large Technical Report 13VC1310-TR-02
+\end{minipage}&\begin{minipage}{2in}\vspace{6px}\small
+218 Gajeong-ro, Yuseong-gu\\
+Daejeon, 305-700, South Korea\\
+http:/$\!$/www.etri.re.kr/\quad 
+\end{minipage}\end{tabular}
+\rule{\textwidth}{2pt}\vspace{0.25in}
+\LARGE \bf
+EQUILIBRIUM POINTS IN N-PERSON GAMES
+}
+
+%\date{Autonomous Control Middleware Research Section, ETRI}
+
+%\begin{figure}[!t]
+%        \centering
+%        \includegraphics[width=0.33\textwidth]{test}
+%       \caption{Caption}
+%        \label{fig1}
+%\end{figure}
+
+\author{
+{\bf Sung-Soo Kim}\\
+\it{sungsoo@etri.re.kr}
+}
+
+\maketitle
+
+\begin{abstract}
+
+In game theory, the \emph{Nash equilibrium} is a solution concept of a non-cooperative game involving two or more players, in which each player is assumed to know the equilibrium strategies of the other players, and no player has anything to gain by changing only his own strategy unilaterally. 
+
+If each player has chosen a strategy and no player can benefit by changing strategies while the other players keep theirs unchanged, then the current set of strategy choices and the corresponding payoffs constitute a Nash equilibrium.
+
+This technical report describes the Nash equilibrium by introducing the original paper \cite{Nash:1950} which were accepted when John F. Nash was in Princeton University.
+
+\end{abstract}
+
+\section{Nash's Original Paper}
+One may define a concept of an $n$-person game in which each player has a finite set of pure strategies and in which a definite set of payments to the $n$ players corresponds to each $n$-tuple of pure strategies, one strategy being taken for each player.           For mixed strategies, which are probability distributions over the pure strategies, the pay-off functions are the expectations of the players, thus becoming polylinear forms in the probabilities with which the various players play their various pure strategies.
+
+$R_i \in \{ a, b, \dots, n\}$
+
+Any $n$-tuple of strategies, one for each player, may be regarded as a point in the product space obtained by multiplying the $n$ strategy spaces of the players. One such $n$-tuple counters another if the strategy of each player in the countering $n$-tuple yields the highest obtainable expectation for its player against the $n-1$ strategies of the other players in the countered $n$-tuple. A self-countering $n$-tuple  is called an equilibrium point. 
+
+The correspondence of each $n$-tuple with its set of countering $n$-tuples gives a one-to-many mapping of the product space into itself.
+From the definition of countering  we see that the set of countering points of a point is convex. By using the continuity of the pay-off functions we see that the graph of mapping is closed. The closedness is equivalent to saying: if $P_1, P_2, ...$ and $Q_1, Q_2, ..., Q_n, ...$
+are sequences of points int eh product space where $Q_n \rightarrow Q, P_n \rightarrow P$ and $Q_n$ counters $P_n$ then $Q$ counters $P$.
+
+Since the graph is closed and since the image of each point under the mapping is convex, we infer from Kakutani's theorem that the mapping has a fixed point (i.e., pint contained in its image). Hence there is an equilibrium point.
+
+In the two-person zero-sum case the "main theorem" and the existence of an equilibrium point are equivalent. In this case any two equilibrium points lead to the same expectations for the players, but this need not occur in general.
+
+\section{History}
+The Nash equilibrium was named after John Forbes Nash. A version of the Nash equilibrium concept was first used by Antoine Augustin Cournot in his theory of oligopoly (1838). In Cournot's theory, firms choose how much output to produce to maximize their own profit. However, the best output for one firm depends on the outputs of others. A Cournot equilibrium occurs when each firm's output maximizes its profits given the output of the other firms, which is a pure strategy Nash Equilibrium.
+The modern game-theoretic concept of Nash Equilibrium is instead defined in terms of mixed strategies, where players choose a probability distribution over possible actions. The concept of the mixed strategy Nash Equilibrium was introduced by John von Neumann and Oskar Morgenstern in their 1944 book \emph{\bfseries The Theory of Games and Economic Behavior}. However, their analysis was restricted to the special case of zero- sum games. They showed that a mixed-strategy Nash Equilibrium will exist for any zero-sum game with a finite set of actions. The contribution of John Forbes Nash in his 1951 article \emph{\bfseries Non-Cooperative Games} was to define a mixed strategy Nash Equilibrium for any game with a finite set of actions and prove that at least one (mixed strategy) Nash Equilibrium must exist in such a game.Since the development of the Nash equilibrium concept, game theorists have discovered that it makes misleading predictions (or fails to make a unique prediction) in certain circumstances. Therefore they have proposed many related solution concepts (also called 'refinements' of Nash equilibrium) designed to overcome perceived flaws in the Nash concept. One particularly important issue is that some Nash equilibria may be based on threats that are not 'credible'. Therefore, in 1965 Reinhard Selten proposed subgame perfect equilibrium as a refinement that eliminates equilibria which depend on non-credible threats. Other extensions of the Nash equilibrium concept have addressed what happens if a game is repeated, or what happens if a game is played in the absence of perfect information. However, subsequent refinements and extensions of the Nash equilibrium concept share the main insight on which Nash's concept rests: all equilibrium concepts analyze what choices will be made when each player takes into account the decision-making of others.
+
+\section{Definitions}
+\subsection{Informal Definition}
+Informally, a set of strategies is a Nash equilibrium if no player can do better by unilaterally changing his or her strategy. To see what this means, imagine that each player is told the strategies of the others. Suppose then that each player asks himself or herself: "Knowing the strategies of the other players, and treating the strategies of the other players as set in stone, can I benefit by changing my strategy?"If any player would answer "Yes", then that set of strategies is not a Nash equilibrium. But if every player prefers not to switch (or is indifferent between switching and not) then the set of strategies is a Nash equilibrium. Thus, each strategy in a Nash equilibrium is a best response to all other strategies in that equilibrium.
+
+The Nash equilibrium may sometimes appear non-rational in a third-person perspective. This is because it may happen that a Nash equilibrium is not Pareto optimal.
+The Nash equilibrium may also have non-rational consequences in sequential games because players may "threaten" each other with non-rational moves. For such games the subgame perfect Nash equilibrium may be more meaningful as a tool of analysis.
+
+\subsection{Formal Definition}
+Let ($S, f$) be a game with n players, where $S_i$ is the strategy set for player $i, S=S_1 \times S_2 ... \times S_n$ is the set of strategy profiles and $f=(f_1(x), ..., f_n(x))$ is the \emph{payoff function} for $x \in￼ S$. Let $x_i$ be a strategy profile of player $i$ and $x_{-i}$ be a strategy profile of all players except for player $i$. When each player $i ￼ \in \{1, ..., n\}$ chooses strategy $x_i$ resulting in strategy profile$ x = (x_1, ..., x_n)$ then player i obtains payoff $f_i(x)$. Note that the payoff depends on the strategy profile chosen, i.e., on the strategy chosen by player $i$ as well as the strategies chosen by all the other players. A strategy profile $x^* \in ￼ S$ is a \emph{Nash equilibrium} (NE) if no unilateral deviation in strategy by any single player is profitable for that player, that is
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\bibliographystyle{IEEEtran}
+\bibliography{References}
+
+\end{document}

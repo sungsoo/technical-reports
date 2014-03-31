@@ -1,0 +1,151 @@
+
+\documentclass[twocolumn]{article}
+\usepackage{mathpazo}
+\usepackage{microtype}
+\usepackage{times}
+
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %                              My Commands
+\newcommand{\bi}{\begin{itemize}}
+\newcommand{\ei}{\end{itemize}}
+\newcommand{\be}{\begin{enumerate}}
+\newcommand{\ee}{\end{enumerate}}
+\newcommand{\ii}{\item}
+\newtheorem{Def}{Definition}
+\newtheorem{Lem}{Lemma}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+
+\usepackage{graphicx}
+\graphicspath{%
+        {converted_graphics/}
+        {./images/}
+}
+    
+\setlength\textwidth{7in} 
+\setlength\textheight{9.5in} 
+\setlength\oddsidemargin{-0.25in} 
+\setlength\topmargin{-0.25in} 
+\setlength\headheight{0in} 
+\setlength\headsep{0in} 
+\setlength\columnsep{18pt}
+\sloppy 
+ 
+\begin{document}
+
+\title{
+\vspace{-0.5in}\rule{\textwidth}{2pt}
+\begin{tabular}{ll}\begin{minipage}{4.75in}\vspace{6px}
+\noindent\large Autonomous Control Middleware Research Section\\
+\vspace{-12px}\\
+\noindent\LARGE ETRI\qquad \large Technical Report 13VC1310-TR-73
+\end{minipage}&\begin{minipage}{2in}\vspace{6px}\small
+218 Gajeong-ro, Yuseong-gu\\
+Daejeon, 305-700, South Korea\\
+http:/$\!$/www.etri.re.kr/\quad 
+\end{minipage}\end{tabular}
+\rule{\textwidth}{2pt}\vspace{0.25in}
+\LARGE \bf
+Peer-to-Peer Middleware
+}
+
+\date{}
+
+\author{
+{\bf Sung-Soo Kim}\\
+\it{sungsoo@etri.re.kr}
+}
+
+\maketitle
+
+\begin{abstract}
+Peer-to-Peer networking has a great potential to make a vast amount of resources accessible. Several years ago, file-sharing applications such as Napster and Gnutella impressively demonstrated the possibilities for the first time. 
+The fundamental Peer-to-Peer concept is general and not limited to a specific application type. 
+Thus, a broader field of applications can benefit from using Peer-to-Peer technology.
+Content delivery, media streaming, games, and collaboration tools are examples of applications fields that use Peer-to-Peer networks today.
+This technical report describes \textit{P2P messaging system}, a \textit{middleware} subsystem specialized in group communication.
+\end{abstract}
+
+\section{Introduction}
+Although Peer-to-Peer networking is still an emerging area, some Peer-to-Peer concepts are already applied successfully in different contexts.
+Good examples are Internet routers, which deliver IP packages along paths that are considered efficient. These routers form a decentralized, 
+hierarchical network. They consider each other as peers, which collaborate in the routing process and in updating each other. 
+Unlike centrialized networks, they can compensate node failures and remain functional as a network.
+Another example of decentralized systems with analogies to Peer-to-Peer network is the Usenet.
+Considering those examples, many Peer-to-Peer concepts are nothing new. However, Peer-to-Peer takes these concepts from the network to the application layer, where software defines purpose and algorithms of virtual (nonphysical) Peer-to-Peer networks.
+
+Widely used web-based services such as Google, Yahoo, Amazon, and eBay can handle a large number of users while maintaining a good degree of failure tolerance. These centralized systems offer a higher level of control, are easier to develop, and perform more predictably than decentralized systems. Thus, a pure Peer-to-Peer system would be an inappropriate choice for applications demanding a certain degree of control, for example,  "who may access what."
+Although Peer-to-Peer systems cannot replace centralized system, there are areas where they can complement them. 
+For example, Peer-to-Peer systems encourage \textit{direct collaboration} of users. 
+If a centralized system in between is not required, this approach can be more efficient because the communication path is shorter.
+In addition, a Peer-to-Peer (sub)system does not require additional server logic and is more resistant to server failures. 
+For similar reasons, because they take workload and traffic off from servers to peers, Peer-to-Peer could reduce the required infrastructure of centralized systems. In this way, Peer-to-Peer networks could cut acquistion and running costs for server hardware. This becomes increasingly relevant when one considers the growing number of end users with powerful computers connected by high bandwidth links.
+
+An approach similar to Peer-to-Peer is the \textit{Grid}, which consists of high-end computers (supercomputers) that collaborate to solve complex computation submitted by users.
+In contrast, Peer-to-Peer networks are \textit{user-centric }and thus focus on the \textit{collaboration} and \textit{communication} of individuals.
+
+\section{Security}
+Security in distributed systems can roughly be divided into two parts. One part concerns the communication between users  of processes, 
+possibly residing on different machines. The principal mechanism for ensuring secure communication is that of a secure channel.
+The major topics in security include secure channels, and more specifically, authentication, message integrity, and confidentiality.
+
+The other part concerns authorization, which deals with ensuring that a process gets only those access rights to the resources in a distributed system it is entitled. In addition to traditional access control mechanisms, we also focus on access control when we have to deal with mobile code such as agents.
+
+Security in decentralized networks is a very challenging topic, because peers may not be trustful, and a trusted central authority lacks. At this point, JXTA makes a compromise because it does not guarantee that peers are the ones that they claim to be. Nevertheless, JXTA provides a security infrastructure that offers established technologies. 
+Messages can be encrypted and signed with several mechanisms. JXTA supports both secret key and public/private key encryptions. 
+By default, JXTA uses RC4 algorithms for secret keys, and RSA algorithms for public/private keys. Signatures and hashes can be created with either SHA1 or MD5 algorithms. 
+
+The secure pipe is a higher-level construct, which automatically handles security issues for developers. Using TLS, it uses the RSA public/private keys to establish a secure connection initially. For the actual data flow, it uses Triple-DES and digital signatures. 
+The public key certificates needed for initialization are created by the JXTA platform itself without centralized certificate authorities.
+
+\section{P2P Synchronization}
+The synchronization service provides consistency for distributed data within a group. This service collaborates with the P2P synchronization module and is therefore an interesting study of how hybrid middleware overcomes limitations of pure P2P systems. If a piece of data is changed at a peer, the other group members need to reflect the changed data. As there is no global data storage
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}

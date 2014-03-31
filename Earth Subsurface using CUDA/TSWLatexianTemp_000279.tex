@@ -1,0 +1,204 @@
+
+\documentclass[twocolumn]{article}
+\usepackage{mathpazo}
+\usepackage{microtype}
+\usepackage{times}
+
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %                              My Commands
+\newcommand{\bi}{\begin{itemize}}
+\newcommand{\ei}{\end{itemize}}
+\newcommand{\be}{\begin{enumerate}}
+\newcommand{\ee}{\end{enumerate}}
+\newcommand{\ii}{\item}
+\newtheorem{Def}{Definition}
+\newtheorem{Lem}{Lemma}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+
+\usepackage{graphicx}
+\graphicspath{%
+        {converted_graphics/}
+        {./images/}
+}
+    
+\setlength\textwidth{7in} 
+\setlength\textheight{9.5in} 
+\setlength\oddsidemargin{-0.25in} 
+\setlength\topmargin{-0.25in} 
+\setlength\headheight{0in} 
+\setlength\headsep{0in} 
+\setlength\columnsep{18pt}
+\sloppy 
+ 
+\begin{document}
+
+\title{
+\vspace{-0.5in}\rule{\textwidth}{2pt}
+\begin{tabular}{ll}\begin{minipage}{4.75in}\vspace{6px}
+\noindent\large Autonomous Control Middleware Research Section\\
+\vspace{-12px}\\
+\noindent\LARGE ETRI\qquad \large Technical Report 13VC1310-TR-06
+\end{minipage}&\begin{minipage}{2in}\vspace{6px}\small
+218 Gajeong-ro, Yuseong-gu\\
+Daejeon, 305-700, South Korea\\
+http:/$\!$/www.etri.re.kr/\quad 
+\end{minipage}\end{tabular}
+\rule{\textwidth}{2pt}\vspace{0.25in}
+\LARGE \bf
+Imaging Earth's Subsurface Using CUDA
+}
+
+%\date{Autonomous Control Middleware Research Section, ETRI}
+
+\author{
+{\bf Sung-Soo Kim}\\
+\it{sungsoo@etri.re.kr}
+}
+
+\maketitle
+
+\begin{abstract}
+Companies in the oil and gas industry depend on accurate seismic surveys of the Earth to identify subsurface oil reservoirs. The challenge is that most seismic data sets are many terabytes in size and it takes enormous amounts of computing power to convert the raw data into useful survey images.
+This technical report describes a CUDA implementation of several time-critical algorithms within industrial seismic processing pipeline. This CUDA implementation achieves significant performance improvements over the latest generation of CPUs, and this reports presents the possibility of building clusters of GPUs to accelerate large seismic processing problems.
+
+\end{abstract}
+
+\section{Introduction}
+The main goal of earth exploration is to provide the oil and gas industry with knowledge of the \emph{earth's subsurface structure} to detect where oil can be found and recovered. To do so, large-scale seismic surveys of the earth are performed, and the data recorded undergoes complex iterative processing to ex‐ tract a geological model of the earth. The data is then interpreted by experts to help decide where to build oil recovery infrastructure.
+The state-of-the-art algorithms used in seismic data processing are evolving rapidly, and the need for computing power increases dramatically every year. For this reason, CGGVeritas has always pioneered new \emph{high-performance computing} (HPC) technologies, and in this work we explore GPUs and NVIDIA's CUDA programming model to accelerate our industrial applications.
+The algorithm we selected to test CUDA technology is one of the most resource-intensive of our seismic processing applications, usually requiring around a week of processing time on a latest-generation CPU cluster with 2,000 nodes. To be economically sound at its full capability for our industry, this algorithm must be an order of magnitude faster. At present, only GPUs can provide such a performance break‐ through.After much analysis and testing, we were able to develop a fully parallel prototype using GPU hardware to speed up part of our processing pipeline by more than a factor of ten. In this chapter, we present the algorithms and methodology used to implement this seismic imaging application on a GPU using CUDA. It should be noted that this work is not an academic benchmark of the CUDA technology—it is a feasibility study for the industrial use of GPU hardware in clusters.
+
+\section{Seismic Data}
+A \emph{seismic survey} is performed by sending compression waves into the ground and recording the reflected waves to determine the subsurface structure of the earth. In the case of a marine survey, like the one shown in Figure \ref{acquisition}, a ship tows about ten cables equipped with recording systems called \emph{hydrophones} that are positioned 25 meters apart. Also attached to the ship is an air gun used as the source of the compression waves.
+
+\begin{figure}[htb]
+        \centering
+        \includegraphics[width=0.48\textwidth]{acquisition}
+        \caption{Marine Seismic Data Acquisition}
+        \label{acquisition}
+\end{figure}
+A vessel fires an air gun to generate a compression wave that propagates down to the earth and generates reflection waves recorded by hydrophones attached to cables behind the ship.
+
+To acquire seismic data, the ship fires the air gun \emph{every 50 meters}, and the resulting compression waves propagate through the water to the sea floor and beyond into the subsurface of the earth. When a wave encounters a change of velocity or density in the earth media, it splits in two, one part being reflected back to the surface while the other is refracted, propagating further into the earth (see Figure 38-1). Therefore, each layer of the subsurface produces a reflection of the wave that is recorded by the hydrophones. Because sound waves propagate through water at about 2,500 m/s and through the earth at 3,000 to 5,000 m/s, recording reflection waves for about four seconds after the shot provides information on the earth down to a depth of about 10 to 20 km.
+A typical \emph{marine survey} covers a few hundred square kilometers, which represents a few million shots and several terabytes of recorded data. Processing this amount of data for many studies in parallel is the core business of CGGVeritas processing centers throughout the world. Due to its very low initial signal- to-noise ratio and the large data size, seismic data processing is extremely demanding in terms of processing power. As illustrated by the image in Figure \ref{capability}, CGGVeritas computing facilities consist of PC clusters of several thousand nodes, providing more than 300 teraflops of computing power and petabytes of disk space.
+
+\begin{figure}[htb]
+        \centering
+        \includegraphics[width=0.49\textwidth]{capability}
+        \caption{Computing Capability Is a Critical Aspect of Our Domain}
+        \label{capability}
+\end{figure}
+
+To support increasing survey sizes and processing complexity, our computing power needs to grow by more than a factor of two every year (see the graph in Figure \ref{capability}). Furthermore, heat limitations have forced CPU manufacturers to limit future clock frequencies to around 4 GHz. Increasing the size of clusters in data centers can be realistic for only a short period of time, and this problem enforces the need for new technologies. Therefore, we believe mastering new computing technologies such as general- purpose computing on GPUs is critically important for the future of seismic data processing.
+
+
+\section{Seismic Processing}
+The goal of seismic processing is to convert terabytes of survey data into a \emph{3D volume description} of the earth's subsurface structure. A typical data set contains billions of vectors of a few thousand values each, where each vector represents the information recorded by a detector at a specific location and specific wave shot.
+The first step in seismic data processing is to \emph{correctly position all survey data} within a global geographic reference frame. In a marine survey, for instance, we need to take into account the \emph{tidal} and \emph{local streams} that shift the acquisition cables from their theoretical straight-line position, and we also need toinclude any movement of the ship's position. All of the data vectors must be positioned inside a 100 km2 region at a resolution of 1 meter. Many different positioning systems, both relative and global, are used during data acquisition, and all such position information is included in this processing step.
+After correcting the global position for all data elements, the next step is to apply signal processing algorithms to normalize the signal over the entire survey and to increase the \emph{signal-to-noise ratio}. Here we correct for any variation in hydrophone sensitivity that can lead to non-homogeneous response between different parts of the acquisition cables. \emph{Band-limited deconvolution algorithms} are used to verify the known impulse response of the overall acquisition process. Various filtering and artifact removal steps are also performed during this phase. The main goal of this step is to produce data that coherently represents the \emph{physics of the wave reflection} for a standard, constant source.
+
+\subsection{Deconvolution}
+n mathematics, deconvolution is an algorithm-based process used to reverse the effects of \textit{convolution} on recorded data.
+The concept of deconvolution is widely used in the techniques of \textit{signal processing} and \textit{image processing}. 
+Because these techniques are in turn widely used in many scientific and engineering disciplines, deconvolution finds many applications.In general, the object of deconvolution is to find the solution of a convolution equation of the form:
+$$ f * g = h$$
+Usually, $h$ is some recorded signal, and $f$ is some signal that we wish to recover, but has been convolved with some other signal g before we recorded it. 
+The function $g$ might represent the \textit{transfer function} of an instrument or a driving force that was applied to a physical system. If we know $g$, or at least know the form of $g$, then we can perform deterministic deconvolution. However, if we do not know $g$ in advance, then we need to estimate it. This is most often done using methods of \textit{statistical estimation}.
+
+In physical measurements, the situation is usually closer to
+$$(f * g) + \varepsilon = h $$
+
+In this case $\varepsilon$ is \textit{noise} that has entered our recorded signal. If we assume that a noisy signal or image is noiseless when we try to make a statistical estimate of $g$, our estimate will be incorrect. 
+In turn, our estimate of $f$ will also be in‐ correct. 
+The lower the signal-to-noise ratio, the worse our estimate of the deconvolved signal will be. 
+That is the reason why inverse filtering the signal is usually not a good solution. 
+However, if we have at least some knowledge of the type of noise in the data (for example, white noise), we may be able to improve the estimate of $f$ through techniques such as Wiener deconvolution.
+The foundations for deconvolution and time-series analysis were largely laid by Norbert Wiener of the Massachusetts Institute of Technology in his book \textbf{\textit{Extrapolation, Interpolation, and Smoothing of Stationary Time Series}} (1949).
+The book was based on work Wiener had done during World War II but that had been classified at the time. 
+Some of the early attempts to apply these theories were in the fields of weather forecasting and economics.
+
+
+The last and the most important and time-consuming step is designed to correct for the effects of \textit{changing subsurface media velocity }on the wave propagation through the earth. Unlike other echoing systems such as radar, our system has no information about the propagation velocity of the media through which the \emph{compression waves} travel. Moreover, the media are not homogeneous, causing the waves to travel in curves rather than straight lines, as shown in Figure 38-3a. Therefore, the rather simple task for radar of converting the time of the echo arrival into the distance of the reflection is, in the seismic domain, an extremely complex, inverse problem. To further complicate the process, more than one reflection occurs after a wave shot, so the recorded signal can in fact be a \emph{superposition} of many different reflections coming from different places.
+
+\begin{figure}[htb]
+        \centering
+        \includegraphics[width=0.49\textwidth]{reflector}
+        \caption{Ray Tracing for a Single Reflector Through the Earth, Modeled by a Velocity Field Display in Color \small{\emph{(a) We can clearly see how velocity variations bend the rays even for a rather smooth velocity model. (b) In some cases, the velocity changes are extremely complex and nonhomogeneous, and the wave propagation is extremely difficult to model, escpecially because we would need to compute billions of rays.}}}
+        \label{reflector}
+\end{figure}
+
+Because the velocity field is initially unknown, we generally start by assuming a rather simple velocity model. Then the \textit{migration process} gives us a better image of the earth's subsurface that allows us to re‐ fine the velocity field. This iterative process finally converges toward our best approximation to the ex‐ act earth reflectivity model.
+At the end of the processing, the 3D volume of data is far cleaner and easier to understand. Some attributes can be extracted to help geologists interpret the results. Typically the impedance of the media is one of those attributes, as well as the wave velocity, the density, and the anisotropy. Figure \ref{seismic} gives an overview of what the data looks like before and after the processing sequence. Also shown is an \textit{attribute map} representing the wave velocity at a particular depth of the seismic survey. Different rock types have different velocities, so \textit{velocity is a good indicator} to look for specific rocks such as sand. In the particular case of Figure \ref{seismic}c, \textit{low velocities }(in blue) are characteristic of \textit{sand}, here from an old riverbed. As a rock, sand is very porous and is typically a good location to prospect for oil.
+
+\begin{figure}[htb]
+        \centering
+        \includegraphics[width=0.49\textwidth]{seismic}
+        \caption{A Seismic Processing Example \small{\emph{ (a) Raw data recorded during a land survey in Germany showing the poor signal-to-noise ratio and the lack of calibration. (b) A vertical section of about 10 km wide and 5 km deep in the final 3D result shows the layered structure of the earth. (c) This map represents an attribute extracted at a particular depth from a final seismic data set. This attribute is used to distinguish between sand and shale rocks (blue versus green) around a winding shape, which is the remaining channel imprint of a 70-million-year-old river buried under 10 km of earth.
+	}}
+	}
+        \label{seismic}
+\end{figure}
+
+\subsection{Wave Propagation}
+For a perfect theoretical seismic data set, the recorded signal $r_x$ of the wave propagation from a specific source $S_i$ recorded by a hydrophone $G_j$ after a reflection of amplitude $R_x$ at the 3D location$ x(x, y, z)$ can be expressed as follows:
+\begin{equation}
+r_x = P^V_{xy}(R_x \cdot P^V_{ix}(W_s)),
+\label{equ01}
+\end{equation}
+
+where $W_s$ is the source signal, $P_{ix}$ is the operator that propagates the wave from the source position $i$ to the reflection position $x$ through the velocity field $V$, and $P_{xj}$ is the operator that propagates the reflected wave from $x$ to the recorder position $j$.To model the complete seismic recording by one receiver, we need to integrate the Equation \ref{equ01} for all possible reflection positions—that is, integrate on the whole 3D volume of x values:
+\begin{equation}
+S_j = \int_x [P^V_{xj}(RC_{earth}(x) \cdot P^V_{ix}(W_x))],
+\label{equ02}
+\end{equation}
+
+where $S_j$ is the seismic recording at position$j$ and $RC_{earth}$ is the reflectivity model of the earth we are looking for. The complexity should be apparent now, because each of the hundreds of millions of data vectors may include information from the whole earth area in a way that depends on the velocity field. Note that in practice the velocity is around a few kilometers per second. Thus if we record wave reflection for a few seconds, only the earth approximately 10 km around the receiver position will contribute to the signal.
+It is not realistic to use a brute-force approach to solve this inverse problem, but it can be simplified if we use the property of the propagation operator: $P_{ij} (Pji (a)) = I$. That is, propagation from source to reflection point and back to the source position should give the initial result (that is, there should be no dissipation). From Equation \ref{equ01} we can see that
+
+\begin{equation}
+P^V_{jx}(r_x) = P^V_{jx}(P^V_{xy}(R_x \cdot P^V_{ix} (W_s))) = R_x \cdot P^V_{ix}(W_s).
+\label{equ03}
+\end{equation}
+
+And if we consider all the possible contributions to a specific record--that is, summing up all contributions for all $x$ locations--we can write this:
+\begin{equation}
+\int_x P^V_{jx}(S_j) = \int_x[RC_{earth}(x) \cdot P^V_{ix}(W_s)] = RC_{earth} \otimes \int_x[P^V_{ix}(W_s)].
+\label{equ04}
+\end{equation}
+
+Hence, the recorded seismic signal $S_j$ , taken as a source and propagated through the earth at all possible x locations, is equal to the earth reflectivity model convolved by the initial source shot propagated to any possible reflection position in the earth. It is then clear that if we correlate both sides of this equation by $\int_x[P^V_{ix}(W_s)]$ and sum up information from all receivers for each source, we may extract the earth reflectivity model:
+$$RC_{earth} = \sum_s[\int_x P^V_{ix}(W_x)*\sum_j \int_x P^V_{jx}(S_j)],$$
+where * is the correlation operator, and using $\int_x[P^V_{ix}(W_s)]*\int_x[P^V_{ix}(W_s)]=1$.
+
+Hence, if we propagate the source wave through the earth to all reachable positions $x$, and correlatethe result with the recorded data back-propagated to the ￼￼￼same $x$ location, we only have to sum up results for all sources and all receivers to obtain the earth reflectivity model. Note that in practice we need to take into account the dispersive effect of the propagation, as well as the fact that the data is band limited. Also, because the velocity field is initially unknown, we need to start with an initial guess (based on expert knowledge of the area) to compute a first reflection model and then refine our velocity field by interpreting the results in terms of the geological structure. (See Yilmaz 2001 and Sherifs 1984 for more information.)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
